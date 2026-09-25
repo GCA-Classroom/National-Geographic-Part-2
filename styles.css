@@ -1,0 +1,382 @@
+/* ==========================================================
+   TOKENS
+   ========================================================== */
+:root {
+  --ink:        #0E2430;   /* deep expedition navy   */
+  --ink-soft:   #1C3A49;
+  --parchment:  #F3ECD8;   /* field-notebook cream   */
+  --parchment-dim: #E7DEC4;
+  --yellow:     #FFC72C;   /* the signature frame    */
+  --yellow-dim: #C99A1E;
+  --rust:       #C1440E;   /* error / accent         */
+  --forest:     #35543A;
+
+  --font-display: "Fraunces", Georgia, serif;
+  --font-label:   "Barlow Condensed", sans-serif;
+  --font-body:    "Barlow", sans-serif;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--ink);
+  color: var(--parchment);
+  font-family: var(--font-body);
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  padding: 28px 16px;
+}
+
+/* ==========================================================
+   SIGNATURE FRAME
+   ========================================================== */
+.frame {
+  width: 100%;
+  max-width: 640px;
+  border: 10px solid var(--yellow);
+  background: var(--ink);
+  padding: 28px 28px 20px;
+}
+
+/* ==========================================================
+   MASTHEAD
+   ========================================================== */
+.masthead {
+  text-align: center;
+  border-bottom: 1px solid rgba(255, 199, 44, 0.35);
+  padding-bottom: 20px;
+  margin-bottom: 24px;
+}
+
+.eyebrow {
+  font-family: var(--font-label);
+  letter-spacing: 0.28em;
+  font-size: 12px;
+  color: var(--yellow);
+  margin: 0 0 6px;
+}
+
+.title {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: clamp(32px, 6vw, 44px);
+  letter-spacing: 0.02em;
+  margin: 0;
+}
+
+.subtitle {
+  font-family: var(--font-label);
+  font-size: 15px;
+  color: var(--parchment-dim);
+  margin: 8px 0 0;
+  font-style: italic;
+}
+
+/* ==========================================================
+   SEARCH
+   ========================================================== */
+.search-panel {
+  margin-bottom: 20px;
+}
+
+.search-label {
+  display: block;
+  font-family: var(--font-label);
+  letter-spacing: 0.08em;
+  font-size: 13px;
+  text-transform: uppercase;
+  color: var(--yellow);
+  margin-bottom: 8px;
+}
+
+.search-row {
+  display: flex;
+  gap: 10px;
+}
+
+#countryInput {
+  flex: 1;
+  padding: 12px 14px;
+  border: 2px solid var(--ink-soft);
+  background: var(--parchment);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 16px;
+}
+
+#countryInput:focus {
+  outline: 3px solid var(--yellow);
+  outline-offset: 1px;
+}
+
+#searchBtn {
+  padding: 12px 20px;
+  border: none;
+  background: var(--yellow);
+  color: var(--ink);
+  font-family: var(--font-label);
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  font-size: 15px;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+#searchBtn:hover { background: var(--yellow-dim); }
+#searchBtn:focus-visible { outline: 3px solid var(--parchment); outline-offset: 2px; }
+
+/* ==========================================================
+   LOADING
+   ========================================================== */
+.loading {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--font-label);
+  letter-spacing: 0.06em;
+  color: var(--yellow);
+  padding: 18px 0;
+}
+
+.compass {
+  font-size: 20px;
+  animation: spin 1.4s linear infinite;
+  display: inline-block;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .compass { animation: none; }
+}
+
+/* ==========================================================
+   ERROR
+   ========================================================== */
+.error {
+  background: rgba(193, 68, 14, 0.15);
+  border: 1px solid var(--rust);
+  color: #FFD9C4;
+  padding: 14px 16px;
+  font-family: var(--font-body);
+  font-size: 15px;
+}
+
+/* ==========================================================
+   RESULT CARD
+   ========================================================== */
+.result-card {
+  background: var(--ink-soft);
+  border: 1px solid rgba(255, 199, 44, 0.25);
+  padding: 24px;
+}
+
+.flag {
+  width: 100%;
+  max-height: 160px;
+  object-fit: cover;
+  border: 1px solid rgba(255, 199, 44, 0.4);
+  display: block;
+  margin-bottom: 16px;
+  background: var(--parchment-dim);
+}
+
+.country-name {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 28px;
+  margin: 0 0 18px;
+  color: var(--parchment);
+}
+
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+  margin: 0 0 18px;
+}
+
+.stat dt,
+.languages-block dt {
+  font-family: var(--font-label);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 12px;
+  color: var(--yellow);
+  margin-bottom: 4px;
+}
+
+.stat dd,
+.languages-block dd {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 500;
+}
+
+.languages-block {
+  border-top: 1px solid rgba(255, 199, 44, 0.2);
+  padding-top: 14px;
+}
+
+/* ==========================================================
+   FOOTER
+   ========================================================== */
+.masthead-footer {
+  text-align: center;
+  margin-top: 24px;
+  font-family: var(--font-label);
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  color: var(--parchment-dim);
+}
+
+/* ==========================================================
+   PART 2: AI FIELD GUIDE
+   ========================================================== */
+.field-guide {
+  margin-top: 20px;
+  background: var(--ink-soft);
+  border: 1px solid rgba(255, 199, 44, 0.25);
+  border-top: 4px solid var(--yellow);
+  padding: 22px 24px 24px;
+}
+
+.guide-eyebrow {
+  font-family: var(--font-label);
+  letter-spacing: 0.28em;
+  font-size: 12px;
+  color: var(--yellow);
+  margin: 0 0 4px;
+}
+
+.guide-title {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 22px;
+  margin: 0 0 16px;
+  color: var(--parchment);
+}
+
+.guide-response {
+  background: var(--parchment);
+  color: var(--ink);
+  padding: 16px 18px;
+  margin-bottom: 18px;
+  font-size: 16px;
+  line-height: 1.55;
+  min-height: 56px;
+  white-space: pre-wrap;
+}
+
+.guide-response.thinking {
+  color: var(--forest);
+  font-style: italic;
+}
+
+.guide-response.guide-error {
+  background: rgba(193, 68, 14, 0.15);
+  border: 1px solid var(--rust);
+  color: #FFD9C4;
+}
+
+#questionInput {
+  flex: 1;
+  padding: 12px 14px;
+  border: 2px solid var(--ink);
+  background: var(--parchment);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 16px;
+}
+
+#questionInput:focus {
+  outline: 3px solid var(--yellow);
+  outline-offset: 1px;
+}
+
+#askBtn {
+  padding: 12px 18px;
+  border: none;
+  background: var(--yellow);
+  color: var(--ink);
+  font-family: var(--font-label);
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  font-size: 15px;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+#askBtn:hover { background: var(--yellow-dim); }
+#askBtn:focus-visible { outline: 3px solid var(--parchment); outline-offset: 2px; }
+#askBtn:disabled { opacity: 0.6; cursor: wait; }
+
+/* --- STRETCH (Step 9): suggested question chips --- */
+.suggestions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.chip {
+  padding: 6px 12px;
+  border: 1px solid var(--yellow);
+  background: transparent;
+  color: var(--yellow);
+  font-family: var(--font-label);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.chip:hover { background: rgba(255, 199, 44, 0.12); }
+.chip:focus-visible { outline: 2px solid var(--parchment); outline-offset: 2px; }
+
+/* --- STRETCH (Step 10): chat bubbles --- */
+.chat-log {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.chat-log:empty { display: none; }
+
+.bubble {
+  max-width: 85%;
+  padding: 10px 14px;
+  font-size: 15px;
+  line-height: 1.5;
+  white-space: pre-wrap;
+}
+
+.bubble.user {
+  align-self: flex-end;
+  background: var(--yellow);
+  color: var(--ink);
+}
+
+.bubble.assistant {
+  align-self: flex-start;
+  background: var(--parchment);
+  color: var(--ink);
+}
+
+/* ==========================================================
+   UTILITY
+   ========================================================== */
+.hidden { display: none !important; }
+
+@media (max-width: 420px) {
+  .stat-grid { grid-template-columns: 1fr; }
+  .search-row { flex-direction: column; }
+  .bubble { max-width: 100%; }
+}
