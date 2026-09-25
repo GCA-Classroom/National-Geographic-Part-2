@@ -1,6 +1,6 @@
 /* ============================================================
    COUNTRY EXPLORER, PART 2: ASK THE FIELD GUIDE — script.js
-   MAIN BRANCH (Steps 1-6 complete — the guided demo)
+   SOLUTION BRANCH (Steps 1-10 complete)
    ------------------------------------------------------------
    PART 1 PATTERN (GET):
      Request -> Receive -> Parse -> Display
@@ -8,7 +8,8 @@
    PART 2 PATTERN (POST):
      User Question + Country Data -> POST to AI -> Generated Answer -> Display
 
-   Steps 7-10 are stretch goals. See the bottom of this file.
+   Everything from Part 1 is kept as-is. Part 2 code is marked
+   with "PART 2" banners below.
    ============================================================ */
 
 // --- Element references (Part 1) ------------------------------
@@ -33,6 +34,8 @@ const guideCountryNameEl = document.getElementById("guideCountryName");
 const questionInput = document.getElementById("questionInput");
 const askBtn = document.getElementById("askBtn");
 const guideResponseEl = document.getElementById("guideResponse");
+const chatLogEl = document.getElementById("chatLog");        // Step 10
+const suggestionsEl = document.getElementById("suggestions"); // Step 9
 
 // Your class worker URL. The worker holds the OpenAI key,
 // so the key NEVER appears in this file.
@@ -40,10 +43,20 @@ const WORKER_URL = "https://YOUR-WORKER-NAME.YOUR-SUBDOMAIN.workers.dev/";
 
 askBtn.addEventListener("click", askFieldGuide);
 
+// Bonus: let Enter submit the question too
+questionInput.addEventListener("keydown", (event) => {
+  if (event.key === "Enter") askFieldGuide();
+});
+
 /* ============================================================
    PART 2 — STEP 2: Remember the country the user explored.
+   We save it here so the Field Guide can use it later.
    ============================================================ */
 let currentCountry = null;
+
+// STRETCH — STEP 8: conversation memory
+// Holds every user + assistant message for the current country.
+let conversation = [];
 
 // --- Part 1: connect the Explore button ------------------------
 searchBtn.addEventListener("click", fetchCountry);
@@ -100,6 +113,10 @@ async function fetchCountry() {
     guideResponseEl.textContent = `Ask me anything about ${country.names.common}.`;
     guideResponseEl.className = "guide-response";
     fieldGuideEl.classList.remove("hidden");
+
+    // STEP 8: a new country means a fresh conversation
+    conversation = [];
+    chatLogEl.innerHTML = "";
   } catch (error) {
     hideLoading();
     resultCard.classList.add("hidden");
@@ -113,6 +130,7 @@ async function fetchCountry() {
 
 /* ============================================================
    PART 2 — STEP 3: Create askFieldGuide()
+   Read the question and validate it before calling the AI.
    ============================================================ */
 async function askFieldGuide() {
   const question = questionInput.value.trim();
@@ -129,21 +147,33 @@ async function askFieldGuide() {
 
   /* ----------------------------------------------------------
      STEP 4: Build the messages array.
+     system = the rules (guardrails) + the country facts
+     user   = what the visitor typed
      ---------------------------------------------------------- */
+  const systemPrompt = buildSystemPrompt(currentCountry);
+
+  // STEP 8: add the new question to the running conversation
+  conversation.push({ role: "user", content: question });
+
   const messages = [
-    { role: "system", content: buildSystemPrompt(currentCountry) },
-    { role: "user", content: question },
+    { role: "system", content: systemPrompt },
+    ...conversation,
   ];
 
   /* ----------------------------------------------------------
-     STEP 6 (part 1): loading state
+     STEP 6 (part 1): loading state — show "Thinking..."
+     and disable the button so it can't be double-clicked.
      ---------------------------------------------------------- */
   guideResponseEl.textContent = "Consulting the field notes...";
   guideResponseEl.className = "guide-response thinking";
   askBtn.disabled = true;
 
+  // STEP 10: show the question as a bubble right away
+  addBubble("user", question);
+  questionInput.value = "";
+
   /* ----------------------------------------------------------
-     STEP 6 (part 2): try/catch
+     STEP 6 (part 2): wrap the request in try/catch
      ---------------------------------------------------------- */
   try {
     /* --------------------------------------------------------
@@ -163,10 +193,19 @@ async function askFieldGuide() {
     console.log("Raw AI response:", data); // inspect the shape!
 
     const reply = data.choices[0].message.content;
-    guideResponseEl.textContent = reply;
+
+    // STEP 8: remember what the AI said
+    conversation.push({ role: "assistant", content: reply });
+
+    // STEP 10: answer goes into a chat bubble; the status box resets.
+    // (Core version, Step 5: guideResponseEl.textContent = reply;)
+    addBubble("assistant", reply);
+    guideResponseEl.textContent = "Ask a follow-up question.";
     guideResponseEl.className = "guide-response";
   } catch (error) {
     console.error(error);
+    // Remove the unanswered question so history stays in sync
+    conversation.pop();
     guideResponseEl.textContent =
       "The Field Guide couldn't answer right now. Please try again in a moment.";
     guideResponseEl.className = "guide-response guide-error";
@@ -176,9 +215,9 @@ async function askFieldGuide() {
 }
 
 /* ============================================================
-   STEP 4 (helper): the system prompt.
-   Grounding = the country facts from Part 1.
-   Guardrails = the client's requirements.
+   STEP 4 (helper) + STEP 7: the system prompt.
+   Grounding: the country facts from Part 1 go in here.
+   Guardrails: the client's four requirements go in here.
    ============================================================ */
 function buildSystemPrompt(country) {
   const facts = [
@@ -194,33 +233,38 @@ function buildSystemPrompt(country) {
 Here are verified facts about the country the visitor is exploring:
 ${facts}
 
-Only answer questions about ${country.names.common}. Keep answers short, warm and family-friendly.`;
+Rules:
+1. Only answer questions about ${country.names.common}: its geography, wildlife, culture, food, history, landmarks and people.
+2. If the visitor asks about something unrelated, politely steer them back to ${country.names.common}.
+3. Sound like National Geographic: curious, warm and family-friendly.
+4. Keep every answer under 100 words.
+5. Use the verified facts above when they are relevant. If you are not sure about something, say so instead of guessing.`;
 }
 
 /* ============================================================
-   STRETCH GOALS (Steps 7-10) — try these on your own!
-   ------------------------------------------------------------
-   STEP 7: Tighten the guardrails in buildSystemPrompt().
-     Add rules for: staying on topic (and steering back politely),
-     the Nat Geo voice, a 100-word limit, and saying "I'm not
-     sure" instead of guessing. Test it with an off-topic question.
-
-   STEP 8: Give the Field Guide a memory.
-     Create a `conversation` array. Push each user question and
-     each AI reply ({ role: "assistant", content: reply }) into it,
-     and send [system, ...conversation] as your messages.
-     Reset it when a new country is explored.
-
-   STEP 9: Make the suggestion chips work.
-     Add ONE click listener on #suggestions. When a .chip is
-     clicked, put its data-question into the input and call
-     askFieldGuide().
-
-   STEP 10: Show the conversation as chat bubbles.
-     Write addBubble(role, text) that creates a div with the
-     classes "bubble user" or "bubble assistant", sets its
-     textContent, and appends it to #chatLog.
+   STRETCH — STEP 9: suggested question chips.
+   Event delegation: one listener on the container
+   handles every chip button inside it.
    ============================================================ */
+suggestionsEl.addEventListener("click", (event) => {
+  const chip = event.target.closest(".chip");
+  if (!chip) return;
+  questionInput.value = chip.dataset.question;
+  askFieldGuide();
+});
+
+/* ============================================================
+   STRETCH — STEP 10: chat bubbles.
+   textContent (not innerHTML) keeps AI text from being
+   treated as HTML. Always treat AI output as untrusted.
+   ============================================================ */
+function addBubble(role, text) {
+  const bubble = document.createElement("div");
+  bubble.className = `bubble ${role}`;
+  bubble.textContent = text;
+  chatLogEl.appendChild(bubble);
+  bubble.scrollIntoView({ behavior: "smooth", block: "nearest" });
+}
 
 // --- Part 1 helpers --------------------------------------------
 function showLoading() {
